@@ -52,14 +52,14 @@ GBasic::GBasic(short steps, short dir_pin, short step_pin, short enable_pin,
  * Initialize pins, calculate timings etc
  */
 void GBasic::beginChild(float rpm, short microsteps) {
-  pinMode(dir_pin, OUTPUT);
-  _sd.setPin(dir_pin, HIGH);
+  // pinMode(dir_pin, OUTPUT);
+  _sd.setPin(_index, dir_pin, HIGH);
 
-  pinMode(step_pin, OUTPUT);
-  _sd.setPin(step_pin, LOW);
+  // pinMode(step_pin, OUTPUT);
+  _sd.setPin(_index, step_pin, LOW);
 
   if IS_CONNECTED (enable_pin) {
-    pinMode(enable_pin, OUTPUT);
+    // pinMode(enable_pin, OUTPUT);
     disable();
   }
 
@@ -123,9 +123,9 @@ short GBasic::setMicrostep(short microsteps) {
   while (i < ms_table_size) {
     if (this->microsteps & (1 << i)) {
       uint8_t mask = ms_table[i];
-      _sd.setPin(mode2_pin, mask & 4);
-      _sd.setPin(mode1_pin, mask & 2);
-      _sd.setPin(mode0_pin, mask & 1);
+      _sd.setPin(_index, mode2_pin, mask & 4);
+      _sd.setPin(_index, mode1_pin, mask & 2);
+      _sd.setPin(_index, mode0_pin, mask & 1);
       break;
     }
     i++;
@@ -353,15 +353,15 @@ long GBasic::nextAction(void) {
     /*
      * DIR pin is sampled on rising STEP edge, so it is set first
      */
-    _sd.setPin(dir_pin, dir_state);
-    _sd.setPin(step_pin, HIGH);
+    _sd.setPin(_index, dir_pin, dir_state);
+    _sd.setPin(_index, step_pin, HIGH);
     unsigned m = micros();
     unsigned long pulse =
         step_pulse; // save value because calcStepPulse() will overwrite it
     calcStepPulse();
     // We should pull HIGH for at least 1-2us (step_high_min)
     delayMicros(step_high_min);
-    _sd.setPin(step_pin, LOW);
+    _sd.setPin(_index, step_pin, LOW);
     // account for calcStepPulse() execution time; sets ceiling for max rpm on
     // slower MCUs
     last_action_end = micros();
@@ -400,14 +400,14 @@ void GBasic::setEnableActiveState(short state) { enable_active_state = state; }
  */
 void GBasic::enable(void) {
   if IS_CONNECTED (enable_pin) {
-    _sd.setPin(enable_pin, enable_active_state);
+    _sd.setPin(_index, enable_pin, enable_active_state);
   };
   delayMicros(2);
 }
 
 void GBasic::disable(void) {
   if IS_CONNECTED (enable_pin) {
-    _sd.setPin(enable_pin, (enable_active_state == HIGH) ? LOW : HIGH);
+    _sd.setPin(_index, enable_pin, (enable_active_state == HIGH) ? LOW : HIGH);
   }
 }
 
